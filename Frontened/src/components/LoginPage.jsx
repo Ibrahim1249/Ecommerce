@@ -16,7 +16,7 @@ export function LoginPage() {
 
   const onSubmit = (data) => {
     console.log(data);
-    // Handle form submission
+  
   };
   return (
     <div className="min-h-screen flex bg-gray-900">

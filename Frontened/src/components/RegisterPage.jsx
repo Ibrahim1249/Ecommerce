@@ -1,5 +1,4 @@
-// import Image from "next/image"
-// import Link from "next/link"
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,25 +6,30 @@ import { Separator } from "@/components/ui/separator";
 import { GithubIcon, Upload } from "lucide-react";
 import { Link } from "react-router-dom";
 import registerImg from "../assets/register.jpg";
-import { useForm } from "react-hook-form";
+import { useForm , Controller } from "react-hook-form";
 import { useState, useRef } from "react";
 import { EyeClosedIcon, EyeOpenIcon } from "@radix-ui/react-icons";
-
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { cn } from "@/lib/utils"
+import axios from "axios";
 export function RegisterPage() {
-  const {
-    register,
-    handleSubmit,
-    watch,
-    formState: { errors },
-  } = useForm();
+  const { control, register , handleSubmit, formState: { errors } } = useForm({
+    defaultValues: {
+      firstName:"",
+      lastName : "",
+      email: "",
+      password: "",
+      role: "user"
+    }
+  })
   const fileInputRef = useRef(null);
-  const [previewImage, setPreviewImage] = useState(null);
-  const [isOpen , setIsOpen ] = useState(false)
-  
+  const [profileImage, setProfileImage] = useState(null);
+  const [isOpen, setIsOpen] = useState(false);
+
   const handleUploadClick = () => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
-    } 
+    }
   };
 
   const handleFileChange = (event) => {
@@ -33,16 +37,31 @@ export function RegisterPage() {
     const file = event.target.files[0];
     if (file) {
       const imageUrl = URL.createObjectURL(file);
-      setPreviewImage(imageUrl); 
+      setProfileImage(imageUrl);
     }
   };
-  const handleRegister = (data) => {
-    console.log(data);
-    // Handle form submission
+  const handleRegister = async(data) => {
+    // console.log(data);
+    const formData = new FormData();
+
+    Object.keys(data).forEach(key =>{
+       formData.append(key , data[key])
+    })
+    if(profileImage){
+      formData.append("profileImage" , profileImage)
+    }
+    console.log(formData)
+    try{
+      const response = await axios.post("http://localhost:8000/api/v1/register" , formData)
+      console.log(response)
+    }catch(error){
+       console.log(error)
+    }
+     
   };
 
 
-  console.log(previewImage)
+  console.log(profileImage);
   return (
     <div className="min-h-screen flex bg-gray-900">
       {/* Left side - Registration Form */}
@@ -56,32 +75,34 @@ export function RegisterPage() {
               Sign up and start your journey
             </p>
           </div>
-          <form className="mt-8 space-y-6"  onSubmit={handleSubmit(handleRegister)}>
+          <form
+            className="mt-8 space-y-6"
+            onSubmit={handleSubmit(handleRegister)}
+          >
             <div className="space-y-4">
-              <div>
-                <Label htmlFor="username" className="text-white">
-                  Username
-                </Label>
-                <Input
-                  id="username"
-                  {...register("username", {
-                    required: "Username is required",
-                    pattern: {
-                      value: /^[a-zA-Z0-9_]{3,20}$/,
-                      message:
-                        "Username must be 3-20 characters and can only contain letters, numbers, and underscores",
-                    },
-                  })}
-                  required
-                  className="bg-gray-800 border-gray-700 text-white placeholder-gray-400"
-                  placeholder="johndoe"
-                />
-                {errors.username && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {errors.username.message}
-                  </p>
-                )}
-              </div>
+            <div className="flex space-x-4">
+            <div className="flex-1 space-y-2">
+              <Label htmlFor="firstName" className="text-gray-200">First Name</Label>
+              <Controller
+                name="firstName"
+                control={control}
+                rules={{ required: "First name is required" }}
+                render={({ field }) => <Input id="firstName"   placeholder="john" className="bg-gray-800 text-gray-100" {...field} />}
+              />
+              {errors.firstName && <p className="text-sm text-red-400">{errors.firstName.message}</p>}
+            </div>
+            <div className="flex-1 space-y-2">
+              <Label htmlFor="lastName" className="text-gray-200">Last Name</Label>
+              <Controller
+                name="lastName"
+             
+                control={control}
+                rules={{ required: "Last name is required" }}
+                render={({ field }) => <Input id="lastName"  placeholder="doe" className="bg-gray-800 text-gray-100" {...field} />}
+              />
+              {errors.lastName && <p className="text-sm text-red-400">{errors.lastName.message}</p>}
+            </div>
+          </div>
               <div>
                 <Label htmlFor="email" className="text-white">
                   Email address
@@ -133,22 +154,69 @@ export function RegisterPage() {
                     },
                   })}
                 />
-                 <span onClick={()=>{setIsOpen(!isOpen)}} className="absolute top-7 right-2 p-2 cursor-pointer ">{isOpen ? <EyeOpenIcon  className="fill-white"/> : <EyeClosedIcon className="fill-white"/>}</span>
+                <span
+                  onClick={() => {
+                    setIsOpen(!isOpen);
+                  }}
+                  className="absolute top-7 right-2 p-2 cursor-pointer "
+                >
+                  {isOpen ? (
+                    <EyeOpenIcon className="fill-white" />
+                  ) : (
+                    <EyeClosedIcon className="fill-white" />
+                  )}
+                </span>
                 {errors.password && (
                   <p className="mt-1 text-sm text-red-600">
                     {errors.password.message}
                   </p>
                 )}
               </div>
+              <div className="space-y-2">
+            <Label htmlFor="role" className="text-gray-200">Role</Label>
+            <Controller
+              name="role"
+              control={control}
+              rules={{ required: "Role is required" }}
+              render={({ field }) => (
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <SelectTrigger id="role" className="bg-gray-800 text-gray-100">
+                    <SelectValue placeholder="Select a role" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-700">
+                    <SelectItem 
+                      value="user"
+                      className={cn(
+                        "cursor-pointer text-gray-100",
+                        field.value === "user" && "bg-gray-800 text-white"
+                      )}
+                    >
+                      User
+                    </SelectItem>
+                    <SelectItem 
+                      value="admin"
+                      className={cn(
+                        "cursor-pointer text-gray-100",
+                        field.value === "admin" && "bg-gray-600 text-white"
+                      )}
+                    >
+                      Admin
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            {errors.role && <p className="text-sm text-red-400">{errors.role.message}</p>}
+          </div>
               <div>
                 <Label htmlFor="profile-image" className="text-white">
                   Profile Image
                 </Label>
                 <div className="mt-1 flex items-center">
                   <span className="inline-block h-12 w-12 rounded-full overflow-hidden bg-gray-700">
-                    {previewImage ? (
+                    {profileImage ? (
                       <img
-                        src={previewImage}
+                        src={profileImage}
                         alt="Profile preview"
                         className="h-full w-full object-cover"
                       />
