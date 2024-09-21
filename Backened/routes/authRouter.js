@@ -8,7 +8,7 @@ const upload = require("../middlewares/profileUpload");
 const authRouter = express.Router();
 
 
-authRouter.post("/register", upload.single("file"),handleRegisterUser)
+authRouter.post("/register", upload.single('profileImage'),handleRegisterUser)
 authRouter.post("/login",handleLoginUser)
 authRouter.post("/logout",handleLogoutUser)
 

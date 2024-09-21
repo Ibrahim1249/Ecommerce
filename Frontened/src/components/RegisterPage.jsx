@@ -40,6 +40,7 @@ export function RegisterPage() {
       setProfileImage(imageUrl);
     }
   };
+
   const handleRegister = async(data) => {
     // console.log(data);
     const formData = new FormData();
@@ -52,7 +53,7 @@ export function RegisterPage() {
     }
     console.log(formData)
     try{
-      const response = await axios.post("http://localhost:8000/api/v1/register" , formData)
+      const response = await axios.post("http://localhost:8989/api/v1/register" , formData)
       console.log(response)
     }catch(error){
        console.log(error)
@@ -78,6 +79,7 @@ export function RegisterPage() {
           <form
             className="mt-8 space-y-6"
             onSubmit={handleSubmit(handleRegister)}
+            enctype="multipart/form-data"
           >
             <div className="space-y-4">
             <div className="flex space-x-4">
@@ -245,7 +247,8 @@ export function RegisterPage() {
                     accept="image/*"
                     className="hidden"
                     onChange={handleFileChange}
-                    // {...register("profileImage")}
+                    name="profileImage"
+                    //  {...register("profileImage")}
                   />
                 </div>
               </div>
