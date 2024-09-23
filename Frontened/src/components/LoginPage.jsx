@@ -83,7 +83,7 @@ export function LoginPage() {
             </div>
             <div className="flex items-center justify-between">
               <Link
-                href="/forgot-password"
+                to="/forgot-password"
                 className="text-sm text-indigo-400 hover:text-indigo-300"
               >
                 Forgot your password?
